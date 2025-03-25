@@ -13,7 +13,7 @@
 #include <cstring>
 #include <fstream>
 
-using namespace std;\\TESTTTTT
+using namespace std;
 
 
 int main( int argc, char *argv[] ) {
@@ -27,65 +27,92 @@ int main( int argc, char *argv[] ) {
 	//Remarque: argv[] est un tableau dans lequel sont stockés les arguments saisis. Le nombre des arguments saisis est stocké dans la variable argc
 	//Consigne 1: Afin de guider l'utilisateur quant au nombre d'arguments requis, affichez un message d'erreur si le nombre d'arguments saisis est incorrect
 	
-	                //Votre code pour la consigne 1
+	if (argc < 2) {
+		perror("Mauvais nombre d'argument");
+		exit(EXIT_FAILURE);
+	}
+
 	
 	// Consigne 2: Convertissez la chaine de caractere argv[1] (le numero de port sollicité sur le serveur) en un entier, pensez à utiliser la fonction atoi()
 
-	                //Votre code pour la consigne 2
+	portno = atoi(argv[1]);
 										 
 	// Consigne 3: Initialisation des différents atrributs sin_family, sin_addr.s_addr et sin_port de la variable serv_addr de type structure. Inspirez-vous de votre code de prelab
 	memset(&serv_addr, 0, sizeof(serv_addr));
 	
-	                //Votre code pour la consigne 3 										 
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_addr.s_addr = INADDR_ANY;
+	serv_addr.sin_port = htons(portno);
 
     addr_len = sizeof(serv_addr);
 	// Consigne 4: Creez le socket en utilisant la fonction socket()
 	
-	                //Votre code pour la consigne 4
+	int server_socket = socket(AF_INET, SOCK_STREAM, 0);
 								  
     // Consigne 5: Verifiez la variable retournee par la fonction socket() et affichez le message d'erreur correspondant, 
 	//Indication: vous pouvez utiliser la fonction perror() 
 
-                    //Votre code pour la consigne 5
+	if (server_socket < 0) {
+		perror("Erreur lors de la création du socket");
+		exit(EXIT_FAILURE);
+	}
 
-	// Consigne 6: On lie socket creer à la structure definie au début du code. Pensez a utiliser la fonction bind()
+	// Consigne 6: On lie le socket creer à la structure definie au début du code. Pensez a utiliser la fonction bind()
 	
-	                //Votre code pour la consigne 6
+	int bind_resultat = bind(server_socket, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
 	
 	//Consigne 7: Affichez un message d'erreur lorsque le bind ne reussit pas
 	
-	                //Votre code pour la consigne 7
+	if (bind_resultat < 0) {
+		perror("Erreur lors du bind");
+		close(server_socket);  
+		exit(EXIT_FAILURE);
+	}
 
 	// Consigne 8: Mettez le serveur en écoute en utilisant la fonction listen()
 	
-	                //Votre code pour la consigne 8
+	int ecoute = listen(server_socket, 5);
 
 	// Consigne 9: Le serveur devrait accepter la connexion du client au serveur
 	//Attention: la fonction accept() cree un nouveau File descriptor (FD) qui sera utilisé dans la suite du code pour désigner le socket du serveur
 	
-	                   //Votre code pour la consigne 9
+	int newsockfd = accept(server_socket, (struct sockaddr*)&cli_addr , sizeof(cli_addr));
 
 	 // Consigne 10: Verifiez la valeur du nouveau FD retournée par la fonction accept() 
 	 //et affichez un message d'erreur dans le cas ou le serveur refuse la connexion du client
 	 
-	                   //Votre code pour la consigne 10
+	if (newsockfd < 0) {
+
+		perror("Le serveur à refusé la connexion");
+		exit(EXIT_FAILURE);
+	}
+
+	else {
+		cout << "Connexion acceptée" << endl;
+	}
 
 	// Consigne 11: Le serveur reçoit le paquet d'initialisation du transfert de fichier, 
 	//Vous pouvez utiliser la fonction recv() avec le flag MSG_WAITALL 
+
 	init_packet ipkt;
+
+	int bytes_received = recv(newsockfd, &ipkt, sizeof(init_packet), MSG_WAITALL);
 	
-	                  //Votre code pour la consigne 11
 	
 	// Consigne 12: Affichez un message d'erreur dans le cas où le paquet reçu ne correspoend pas à un paquet d'initialisation
 	// Indication: vous pouvez simplement vérifier si l'entête du paquet reçu ipkt.msg est différente au MSG_INIT
 	//Dans le cas d'erreur fermez le socket (le FD résultant de l'excustion de la focntion par accept())
 	
-	                  //Votre code pour la consigne 12
+	if (ipkt.msg != MSG_INIT) {
+		perror("Le paquet reçu n'est pas un paquet d'initialisation");
+		exit(EXIT_FAILURE);
+	}
+	close(newsockfd);
 
 	// un ofstream binaire ouvert en mode out ervira pour l'ecriture des octets reçus par chaque fragment
 	
 	
-	                  ofstream ofs(string(ipkt.filename).c_str(), ios::out | ios::binary);
+	ofstream ofs(string(ipkt.filename).c_str(), ios::out | ios::binary);
 	
 	
 	// Consigne 13: Après la reception du paquet d'initialisation du transfert des du fichier, le serveur accepte le transfert de fichier en renvoyant un 
@@ -94,7 +121,7 @@ int main( int argc, char *argv[] ) {
 	
 	 MESSAGE msg = MSG_ACCEPT;
 	
-	                  //Votre code pour la consigne 13
+	int lol = write()
 	
     // bytes_received est une variable pour stocker le nombre de bytes recus par le serveur 
 	long long int bytes_received = 0;

@@ -9,7 +9,7 @@
  * Ce fichier devrait être intégralement fourni aux étudiants.
  * Il contient les différents types de messages et la structure de paquet d'initialisation.
  */
-// TEST
+
 #pragma once
 
 #include <stdio.h>

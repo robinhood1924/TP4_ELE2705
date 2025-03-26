@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
 	// Consigne 7: connectez le socket client au serveur en utilisant la fonction connect()
 
 
-	int reponse_connect = connect(client_socket, (sockaddr*)&serv_addr, sizeof(serv_addr));
+	int reponse_connect = connect(client_socket, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
 
 
 	//Consigne 8: Verifiez la valeur de la variable retournée par la finction connect() et affichez un message d'erreur lorsque la connexion au serveur échoue

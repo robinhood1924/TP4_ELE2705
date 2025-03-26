@@ -121,7 +121,13 @@ int main( int argc, char *argv[] ) {
 	
 	 MESSAGE msg = MSG_ACCEPT;
 	
-	int lol = write()
+	 int bytes_sent = write(newsockfd, &msg, sizeof(msg));
+
+	 if (bytes_sent < 0) {
+		 perror("Erreur lors de l'envoi de MSG_ACCEPT");
+		 close(newsockfd);
+		 exit(EXIT_FAILURE);
+	 }
 	
     // bytes_received est une variable pour stocker le nombre de bytes recus par le serveur 
 	long long int bytes_received = 0;
@@ -139,28 +145,35 @@ int main( int argc, char *argv[] ) {
          //Consigne 14: Cas 1: le nombre de bytes restants est inférieur à BUFFER_SIZE 
 		 //Vous pouvez utiliser la fonction read() sur le socket du serveur. read() sur un socket est equivalent à la reception des donnees
 		
-			   //Votre code pour la consigne 14
+			long long int bytes_restant = ipkt.filesize - bytes_received;
+			n = read(newsockfd, buffer, bytes_restant);
+			if (n < 0) {
+				perror("Erreur lors de la réception des données (cas 1)");
+				close(newsockfd);
+				ofs.close();
+				exit(EXIT_FAILURE);
+			}
+			ofs.write(buffer, n);
 		}
-		
-		
-			
+					
 			
 		else {
          //Consigne 15: Cas 2: le nombre de bytes restants est inférieur à BUFFER_SIZE 
 		 //Vous pouvez utiliser la fonction read() sur le socket su serveur
 		 
-		      //Votre code pour la consigne 15
-		 
+			n = read(newsockfd, buffer, BUFFER_SIZE);
+			if (n < 0) {
+				perror("Erreur lors de la réception des données (cas 2)");
+				close(newsockfd);
+				ofs.close();
+				exit(EXIT_FAILURE);
+			}
+			ofs.write(buffer, n);
 		}
-		
-		
-			                  
-
+		                
 		// Consigne 16: Écrivez les bytes reçus dans le fichier binare ofstream en utilisant ofs.write()
 		
-		
-		      //Votre code pour la consigne 16
-		
+		ofs.write(buffer, n);
 		
 		// Le compteur du nombre de bytes reçu est incrémenté par le nombre de bytes reçus. 
 		//Pensez à mettre à jour la valeur de la variable n dans chacun des cas étudié ci-haut
@@ -169,18 +182,32 @@ int main( int argc, char *argv[] ) {
 
 	// Consign 17: Le serveur reçoit le paquet qui indique la fin du transfert des donnees. Vous pouvez utiliser la fonction recv() avec le flag MSG_WAITALL 
 	
-	            //Votre code pour la consigne 17 
+	MESSAGE fin_msg;
+	int fin_recv = recv(newsockfd, &fin_msg, sizeof(MESSAGE), MSG_WAITALL);
+
+	if (fin_recv <= 0) {
+		perror("Erreur lors de la réception du MSG_END");
+		close(newsockfd);
+		ofs.close();
+		exit(EXIT_FAILURE);
+	}
 								 
 	//Consigne 18: Affichez un message d'erreur si l'entete du paquet reçu est différente MSG_END  
 	
-	           //Votre code pour la consigne 18
+	if (fin_msg != MSG_END) {
+		perror("Le message reçu n'est pas MSG_END");
+		close(newsockfd);
+		ofs.close();
+		exit(EXIT_FAILURE);
+	}
 
 	// Consigne 19: Fermez le ofstream et le socket
 	                    
 	cout << "Closing socket..." << endl;
-	
-	
-	          //Votre code pour la consigne 19
 
+	ofs.close();         
+	close(newsockfd);   
+	close(server_socket);
+	cout << "Socket fermé, serveur terminé." << endl;
 	return 0;
 }
